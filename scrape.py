@@ -115,25 +115,28 @@ def main(search_url_file, to_addr):
         print("Processing {} results from Craigslist".format(len(search_results)))
         new_listings = []
         for title, listing_url in search_results:
-            # Check for duplicate title with older listing
-            if title in titles:
-                print("Duplicate title")
-                continue
+            try:
+                # Check for duplicate title with older listing
+                if title in titles:
+                    print("Duplicate title")
+                    continue
 
-            # Check for duplicate images with older listing
-            listing_soup = soup_from_url(listing_url)
-            listing_hashes = hash_images_from_listing_page(listing_url, listing_soup)
-            listing_hash = hash_hash_list(listing_hashes)
-            if listing_hash in imghashes:
-                print("Duplicate images")
-                continue
+                # Check for duplicate images with older listing
+                listing_soup = soup_from_url(listing_url)
+                listing_hashes = hash_images_from_listing_page(listing_url, listing_soup)
+                listing_hash = hash_hash_list(listing_hashes)
+                if listing_hash in imghashes:
+                    print("Duplicate images")
+                    continue
 
-            # It's unique!
-            db_list.append((title, listing_hash, listing_url, date))
-            titles.add(title)
-            imghashes.add(listing_hash)
-            new_listings.append((title, listing_url))
-            print("New unique listing! {} {}".format(title, listing_url))
+                # It's unique!
+                db_list.append((title, listing_hash, listing_url, date))
+                titles.add(title)
+                imghashes.add(listing_hash)
+                new_listings.append((title, listing_url))
+                print("New unique listing! {} {}".format(title, listing_url))
+            except:
+                print("Error processing {} {}, skipping".format(title, listing_url))
 
     if len(new_listings) > 0 and not to_addr is None:
         print("Sending updates by email")
