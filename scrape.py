@@ -92,7 +92,12 @@ Subject: {}
         print("Failed to send email alert")
 
 
-def main(search_url, to_addr):
+def main(search_url_file, to_addr):
+    print("Loading Craigslist search URLs")
+    f = open(search_url_file, 'r')
+    search_urls = filter(lambda s: len(s) > 0, f.read().splitlines())
+    f.close()
+
     print("Loading database")
     db_list = load_from_file(FILENAME)
     titles = set()
@@ -101,33 +106,34 @@ def main(search_url, to_addr):
         titles.add(title)
         imghashes.add(imghash)
 
-    print("Querying Craigslist")
-    date = datetime.date.today().isoformat()
-    search_soup = soup_from_url(search_url)
-    search_results = parse_results_search_page(search_url, search_soup)
+    for search_url in search_urls:
+        print("Querying Craigslist with search url {}".format(search_url))
+        date = datetime.date.today().isoformat()
+        search_soup = soup_from_url(search_url)
+        search_results = parse_results_search_page(search_url, search_soup)
 
-    print("Processing {} results from Craigslist".format(len(search_results)))
-    new_listings = []
-    for title, listing_url in search_results:
-        # Check for duplicate title with older listing
-        if title in titles:
-            print("Duplicate title")
-            continue
+        print("Processing {} results from Craigslist".format(len(search_results)))
+        new_listings = []
+        for title, listing_url in search_results:
+            # Check for duplicate title with older listing
+            if title in titles:
+                print("Duplicate title")
+                continue
 
-        # Check for duplicate images with older listing
-        listing_soup = soup_from_url(listing_url)
-        listing_hashes = hash_images_from_listing_page(listing_url, listing_soup)
-        listing_hash = hash_hash_list(listing_hashes)
-        if listing_hash in imghashes:
-            print("Duplicate images")
-            continue
+            # Check for duplicate images with older listing
+            listing_soup = soup_from_url(listing_url)
+            listing_hashes = hash_images_from_listing_page(listing_url, listing_soup)
+            listing_hash = hash_hash_list(listing_hashes)
+            if listing_hash in imghashes:
+                print("Duplicate images")
+                continue
 
-        # It's unique!
-        db_list.append((title, listing_hash, listing_url, date))
-        titles.add(title)
-        imghashes.add(listing_hash)
-        new_listings.append((title, listing_url))
-        print("New unique listing! {} {}".format(title, listing_url))
+            # It's unique!
+            db_list.append((title, listing_hash, listing_url, date))
+            titles.add(title)
+            imghashes.add(listing_hash)
+            new_listings.append((title, listing_url))
+            print("New unique listing! {} {}".format(title, listing_url))
 
     if len(new_listings) > 0 and not to_addr is None:
         print("Sending updates by email")
@@ -146,9 +152,9 @@ if len(sys.argv) < 2:
     print(sys.argv)
     sys.exit(1)
 
-search_url = sys.argv[1]
+search_url_file = sys.argv[1]
 to_addr = sys.argv[2] if len(sys.argv) > 2 else None
 
-main(search_url, to_addr)
+main(search_url_file, to_addr)
 
 
