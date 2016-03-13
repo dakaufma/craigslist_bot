@@ -1,11 +1,12 @@
-Usage: python scraper.py <craigslist search url>
+Usage: python scraper.py <craigslist search url> [<email to notify>]
 
 
 # Description
 
 Parses a craigslist search url and stores results in a file. Unique entries are
 determined by title and the hash of their images (both must be unique). Each
-run outputs new unique entries and updates the database of old entries.
+run outputs new unique entries and updates the database of old entries. Also 
+does email notifications.
 
 
 # Store in JSON:

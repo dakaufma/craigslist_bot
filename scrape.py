@@ -6,6 +6,7 @@ import hashlib
 import json
 import datetime
 import random
+import smtplib
 
 FILENAME = 'craig.db'
 
@@ -40,7 +41,7 @@ def hash_images_from_listing_page(url, listing_soup):
     divs = listing_soup.find_all("div")
     thumbs_list = list(filter(lambda d: d.has_attr("id") and d['id'] == "thumbs", divs))
     if len(thumbs_list) == 0:
-        return [str(random.random())]
+        return [str(random.random())] # return something with a unique hash
     thumbs = thumbs_list[0]
     imgs = thumbs.find_all('img')
     img_urls = [img['src'] for img in imgs]
@@ -77,7 +78,21 @@ def save_to_file(file_name, data):
         raise
 
 
-def main(search_url):
+def send_email(from_addr, to_addr, subject, body):
+    message = """From: {}
+To: {}
+Subject: {}
+
+{}
+""".format(from_addr, to_addr, subject, body)
+    try:
+        smtp = smtplib.SMTP('outgoing.mit.edu')
+        smtp.sendmail(from_addr, [to_addr], message)
+    except SMTPException:
+        print("Failed to send email alert")
+
+
+def main(search_url, to_addr):
     print("Loading database")
     db_list = load_from_file(FILENAME)
     titles = set()
@@ -92,6 +107,7 @@ def main(search_url):
     search_results = parse_results_search_page(search_url, search_soup)
 
     print("Processing {} results from Craigslist".format(len(search_results)))
+    new_listings = []
     for title, listing_url in search_results:
         # Check for duplicate title with older listing
         if title in titles:
@@ -110,18 +126,29 @@ def main(search_url):
         db_list.append((title, listing_hash, listing_url, date))
         titles.add(title)
         imghashes.add(listing_hash)
+        new_listings.append((title, listing_url))
         print("New unique listing! {} {}".format(title, listing_url))
+
+    if len(new_listings) > 0 and not to_addr is None:
+        print("Sending updates by email")
+        subject = "{} new listing(s) from your friendly Craigslist scraper".format(len(new_listings))
+        body = "New listings!\n\n"
+        for title, url in new_listings:
+            body = body + "{}\t{}\n".format(title, url)
+        send_email("kaufman@mit.edu", to_addr, subject, body)
 
     print("Writing (potentially) updated db back to file")
     save_to_file(FILENAME, db_list)
 
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 2:
     print("Usage: python scrape.py <craigslist search url>")
     print(sys.argv)
     sys.exit(1)
 
 search_url = sys.argv[1]
-main(search_url)
+to_addr = sys.argv[2] if len(sys.argv) > 2 else None
+
+main(search_url, to_addr)
 
 
