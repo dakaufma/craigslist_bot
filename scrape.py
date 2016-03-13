@@ -5,6 +5,7 @@ import sys
 import hashlib
 import json
 import datetime
+import random
 
 FILENAME = 'craig.db'
 
@@ -39,7 +40,7 @@ def hash_images_from_listing_page(url, listing_soup):
     divs = listing_soup.find_all("div")
     thumbs_list = list(filter(lambda d: d.has_attr("id") and d['id'] == "thumbs", divs))
     if len(thumbs_list) == 0:
-        return ['no hashes']
+        return [str(random.random())]
     thumbs = thumbs_list[0]
     imgs = thumbs.find_all('img')
     img_urls = [img['src'] for img in imgs]
