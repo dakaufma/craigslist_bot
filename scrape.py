@@ -7,6 +7,7 @@ import json
 import datetime
 import random
 import smtplib
+import unicodedata
 
 FILENAME = 'craig.db'
 
@@ -85,6 +86,7 @@ Subject: {}
 
 {}
 """.format(from_addr, to_addr, subject, body)
+    message = unicodedata.normalize('NFKD', message).encode('ascii','ignore')
     try:
         smtp = smtplib.SMTP('outgoing.mit.edu')
         smtp.sendmail(from_addr, [to_addr], message)
