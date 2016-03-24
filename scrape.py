@@ -108,6 +108,7 @@ def main(search_url_file, to_addr):
         titles.add(title)
         imghashes.add(imghash)
 
+    new_listings = []
     for search_url in search_urls:
         print("Querying Craigslist with search url {}".format(search_url))
         date = datetime.date.today().isoformat()
@@ -115,7 +116,6 @@ def main(search_url_file, to_addr):
         search_results = parse_results_search_page(search_url, search_soup)
 
         print("Processing {} results from Craigslist".format(len(search_results)))
-        new_listings = []
         for title, listing_url in search_results:
             try:
                 # Check for duplicate title with older listing
