@@ -1,10 +1,10 @@
 # Usage
 
-pythons scraper.py <file of craigslist search URLs> [<email to notify>]
+    python3 scraper.py <file of craigslist search URLs> [<email to notify>]
 
 # Project website
 
-(kaufman.mit.edu/projects/craigslist_bot.html)[kaufman.mit.edu/projects/craigslist_bot.html]
+[http://kaufman.mit.edu/projects/craigslist_bot.html](http://kaufman.mit.edu/projects/craigslist_bot.html)
 
 # Description
 
@@ -17,7 +17,7 @@ goal of this script is to eliminate all the rereading.
 
 # Details
 
-python3 scraper.py <file_of_search_urls> [<email_to_notify>]
+    python3 scraper.py <file_of_search_urls> [<email_to_notify>]
 
 - file_of_search_urls should be a file with one URL per line. To create this 
   file, run your Craigslist search in the browser and save the URL that gives 
