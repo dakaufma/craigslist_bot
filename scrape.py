@@ -8,6 +8,7 @@ import datetime
 import random
 import smtplib
 import unicodedata
+import re
 
 FILENAME = 'craig.db'
 
@@ -131,6 +132,11 @@ def main(search_url_file, to_addr):
                     print("Duplicate images")
                     continue
 
+               	# Check to see if the listing is for september
+                if isSeptember(listing_soup.text):
+                    print("September listing")
+                    continue
+
                 # It's unique!
                 db_list.append((title, listing_hash, listing_url, date))
                 titles.add(title)
@@ -150,6 +156,23 @@ def main(search_url_file, to_addr):
 
     print("Writing (potentially) updated db back to file")
     save_to_file(FILENAME, db_list)
+
+
+def isSeptember(listing_text):
+    alpha_num = re.compile('[^a-zA-Z0-9/]+')
+    text_alphanum = alpha_num.sub('', str(listing_text)).lower()
+    sep_strings = [
+        "sep1",
+        "sep01",
+        "9/1",
+        "09/01",
+	"september"
+    ]
+    for sep_string in sep_strings:
+        if sep_string in text_alphanum:
+            return True
+    return False
+
 
 
 if len(sys.argv) < 2:
